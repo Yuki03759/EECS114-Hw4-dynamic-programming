@@ -71,8 +71,10 @@ void init(Input* in){
     
     //allocate matrix as m
     in->m = malloc(sizeof(int*)*in->size_y);
+    assert(in->m);
+    
     for(i = 0; i < in->size_x; i++){
-        in->m[i] = malloc(sizeof(int*)*in->size_x);
+        in->m[i] = malloc(sizeof(int)*in->size_x);
     }
     
     printf("in->size_x : %d\n", in->size_x);
@@ -82,8 +84,8 @@ void init(Input* in){
     
     for(i = 0; i < in->size_x; i++){
         for(j = 0; j < in->size_y; j++){
-           // printf("%d : %d\n", i, j);
-            in->m[i][j] = 0;
+            //printf("%d : %d\n", i, j);
+            //in->m[i][j] = 0;
         }
     }
     
@@ -195,12 +197,12 @@ int main(){
 
     int i, j;
     
-    Input* input = readFile("input.txt");
+    Input* input = readFile("input3.txt");
 
     //transform(input, input->size_x-1, input->size_y-1);
-    //doMemorization(input);
+    doMemorization(input);
     //printMatrix(input);
-    
+    printf("smallest cost = %d\n", input->m[input->size_x-1][input->size_y-1]);
     return 0;
 }
 

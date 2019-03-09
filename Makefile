@@ -7,5 +7,5 @@ dynamic.o: dynamic.c
 	gcc -c dynamic.c
 
 
-clearn:
+clean:
 	rm -rf *.o dynamic
