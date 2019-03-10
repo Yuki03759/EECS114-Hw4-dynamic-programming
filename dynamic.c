@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
+#include "timer.c"
 
 typedef struct Input{
     int** m;
@@ -23,14 +25,23 @@ int transform(Input* in, int i, int j){
         }
         else{
             
+            //long lines
+            /*
             int a = (transform(in, i-1, j-1) + in->cost_r);
             int b = (transform(in, i, j-1) + in->cost_i);
             int c = (transform(in, i-1, j) + in->cost_d);
             int temp = ( a < b ) ? a : b;
             int min = ( c < temp) ? c : temp;
             in->m[i][j] = min;
+            */
             
-            //in->m[i][j] = ( ( c < (a < b) ? a : b) ? c : ( a < c ) ? a : b );
+            //two lines
+            int temp = ( (transform(in, i-1, j-1) + in->cost_r) < (transform(in, i, j-1) + in->cost_i) ) ? 
+                            (transform(in, i-1, j-1) + in->cost_r) : (transform(in, i, j-1) + in->cost_i);
+            
+            in->m[i][j] = ( (transform(in, i-1, j) + in->cost_d) < temp) ? (transform(in, i-1, j) + in->cost_d) : temp;
+            
+            
             //one line
         /*    
             in->m[i][j] =         
@@ -68,10 +79,10 @@ int memoization(struct Input* in, int i, int j){
 
 printInput(Input* in){
     
-    printf("in->size_x : %d\n", in->size_x);
-    printf("in->size_y : %d\n", in->size_y);
-    printf("in->x : %s\n", in->x);
-    printf("in->y : %s\n", in->y);
+    printf("The size of x : %d\n", in->size_x);
+    printf("The size of y : %d\n", in->size_y);
+    printf("\nThe string of x : \n\n%s", in->x);
+    printf("\nThe string of y : \n\n%s", in->y);
    
 }
 
@@ -208,7 +219,7 @@ struct Input* scanFile_getline( char* filename ){
     char* temp_y;
     
     while(getline(&buffer, &buffer_size, fp) != -1){
-        printf("\n%d: %s", ++line_number, buffer);
+        line_number++;
         switch(line_number){
             case 1:
                 size_x = atoi(buffer);
@@ -227,10 +238,6 @@ struct Input* scanFile_getline( char* filename ){
         }
     }
     
-    printf("size_x is : %d\n", size_x);
-    printf("size_y is : %d\n", size_y);
-    printf("temp_x is : %s", temp_x);
-    printf("temp_y is : %s", temp_y);
     
     //Create file
     Input* in = createInput(size_x, size_y, temp_x, temp_y);
@@ -260,21 +267,30 @@ void doMemorization( Input* in ){
 }
 
 
-int main(){
+int main(int argc, char* argv[]){
 
+    char* input_file = "input.txt";
+    
+    if(argc == 2){
+        input_file = argv[1];
+    }
+    else{
+        fprintf(stderr, "\nusage: %s <input> \n", argv[0]);
+        fprintf(stderr, "where <n> is the input file\n");
+    }
+    
+    
     int i, j;
+    Input* input = scanFile_getline(input_file);
     
-    Input* input = scanFile_getline("input.txt");
+    transform(input, input->size_x-1, input->size_y-1);
     
-    //transform(input, input->size_x-1, input->size_y-1);
-    
-    doMemorization(input);
-    
-    printMatrix(input);
-    
+    //print information
+    printf("\n");
+    printf("input file : %s\n", input_file);
+    printf("smallest cost : %d\n", input->m[input->size_x-1][input->size_y-1]);
     printf("\n");
     
-    //printf("smallest cost = %d\n", input->m[input->size_x-1][input->size_y-1]);
     return 0;
 }
 

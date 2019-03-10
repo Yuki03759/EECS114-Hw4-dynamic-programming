@@ -1,11 +1,22 @@
-algorithm
-analysis
- -> 24 (memoization)
- -> 24 (transform)
- 
+Memoization
 
+Input : 54
 Input 1: 1816
 Input 2: 1824
 Input 3: 1829
-Electrical engineering to computer science : 55
+
+
+Transform (without making one line)
+
+Input : 54
+Input 1: 1816
+Input 2: 1824
+Input 3: 1829
+
+Transform (with making one line)
+
+Input : 
+Input 1: 
+Input 2: 
+Input 3: 
 

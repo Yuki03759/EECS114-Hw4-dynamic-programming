@@ -1,0 +1,12 @@
+EECS 114 Homework 4
+
+Author:
+	Yuki Hayashi
+
+Date:
+	3/17/2018
+
+How to make:
+   	1. dynamic programming
+		make  
+		./dynamic <input file name>

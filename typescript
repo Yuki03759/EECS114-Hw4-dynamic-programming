@@ -1,0 +1,25 @@
+Script started on Sun 10 Mar 2019 01:21:18 AM PST
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ make dynamic.c [K[K
+gcc -c dynamic.c
+gcc -o dynamic dynamic.o
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ ./dynamic inpu
+input1.txt  input2.txt  input3.txt  input.txt   
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ ./dynamic input1.txt 
+
+input file : input1.txt
+smallest cost : 1816
+
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ ./dynamic input2.txt
+
+input file : input2.txt
+smallest cost : 1824
+
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ ,.[K[K./dynamic input3.txt
+
+input file : input3.txt
+smallest cost : 1829
+
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ s[Kexit
+exit
+
+Script done on Sun 10 Mar 2019 01:21:57 AM PST
