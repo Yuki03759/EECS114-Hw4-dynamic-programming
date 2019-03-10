@@ -1,0 +1,11 @@
+algorithm
+analysis
+ -> 24 (memoization)
+ -> 24 (transform)
+ 
+
+Input 1: 1816
+Input 2: 1824
+Input 3: 1829
+Electrical engineering to computer science : 55
+
