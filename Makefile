@@ -1,11 +1,16 @@
-all: dynamic
+all: EditDistance
 
-dynamic: dynamic.o 
-	gcc -o dynamic dynamic.o
+EditDistance: EditDistance.o 
+	gcc -o EditDistance EditDistance.o
 
-dynamic.o: dynamic.c
-	gcc -c dynamic.c
+EditDistance.o: EditDistance.c
+	gcc -c EditDistance.c
 
+Calculate: Calculate.o 
+	gcc -o Calculate Calculate.o
+
+Calculate.o: Calculate.c
+	gcc -c Calculate.c
 
 clean:
-	rm -rf *.o dynamic
+	rm -rf *.o Calculate EditDistance
