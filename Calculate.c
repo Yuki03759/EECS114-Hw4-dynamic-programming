@@ -286,12 +286,14 @@ int main(int argc, char* argv[]){
     
     transform(input, input->size_x-1, input->size_y-1);
     
-    printMatrix(input);
+    //printMatrix(input);
     
     //print information
     printf("\n");
     printf("input file : %s\n", input_file);
-    printf("smallest cost : %d\n", input->m[input->size_x-1][input->size_y-1]);
+    printf("\n\nx : %s", input->x);
+    printf("\ny : %s\n", input->y);
+    printf("\nsmallest cost : %d\n", input->m[input->size_x-1][input->size_y-1]);
     printf("\n");
     
     return 0;

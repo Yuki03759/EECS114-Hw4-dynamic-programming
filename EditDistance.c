@@ -481,22 +481,27 @@ void traceMatrix(Input* in, int m, int n, int totalcost){
     
     l->point = firstNode;
     
-    printf("\noperation\t\tz\t\tcost\ttotal\n");
-    printf("----------------------------------------------------------------\n");
-    printf("initial\t\t");
+    printf("\nx : %s\n", in->x);
+    printf("y : %s\n", in->y);
+    
+    printf("\noperation\tcost\ttotal\tz\n");
+    printf("-------------------------------------------------------------------------------\n");
+    printf("initial\t");
+    printf("\t0\t0\t");
     printList(l, in);
-    printf("\t\t0\t0\n");
+    printf("\n");
     
     char* names[] = {"Right", "Delete", "Insert" , "Replace" };
     int costs[] = {0,2,3,4};
     
     int total = 0;
     for(i=count-1; i >= 0 ; i--){
-        printf("%s\t\t", names[array[i]]);
-        operation(l, in, array[i]);
+        printf("%s\t", names[array[i]]);
         total += costs[array[i]];
+        printf("\t%d\t%d\t", costs[array[i]], total);
+        operation(l, in, array[i]);
         printList(l, in);
-        printf("\t\t%d\t%d\t\n", costs[array[i]], total);
+        printf("\n");
     }
     
 }
@@ -559,13 +564,24 @@ void writeFile(Input* in, char* filename){
     fclose(fp);
 }
 
-int main(){
+int main(int argc, char* argv[]){
+    
+    char* filename;
+    
+    if(argc == 2){
+        filename = argv[1];
+    }
+    else{
+        fprintf(stderr, "\nusage: %s <input> \n", argv[0]);
+        fprintf(stderr, "where <n> is the input file\n");
+        return;
+    }
     
     int i, j, totalcost = 0;
-    char* input_file = "./input/input1.txt";
-    char* output_file = "./output/input1.txt";
+    //char* input_file = "./input/input1.txt";
+    //char* output_file = "./output/input1.txt";
    
-    Input* input = scanFile(input_file);
+    Input* input = scanFile(filename);
     
     int size_x = input->size_x;
     int size_y = input->size_y;
@@ -573,6 +589,8 @@ int main(){
     DP(input);
     
     traceMatrix(input, size_x, size_y, input->m[size_x][size_y]);
+    
+    //writeFile(input, filename);
     //printMatrix(input);
     
     

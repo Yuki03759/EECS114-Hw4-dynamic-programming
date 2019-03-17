@@ -1,0 +1,45 @@
+Script started on Sun 17 Mar 2019 01:22:03 PM PDT
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ make
+gcc -c EditDistance.c
+gcc -o EditDistance EditDistance.o
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ ./EditDistance ./input/input.txt
+
+x : electrical engineering
+
+y : computer science
+
+operation	cost	total	z
+-------------------------------------------------------------------------------
+initial		0	0	|electrical engineering
+Delete		2	2	|lectrical engineering
+Delete		2	4	|ectrical engineering
+Delete		2	6	|ctrical engineering
+Right		0	6	c|trical engineering
+Insert		3	9	co|trical engineering
+Insert		3	12	com|trical engineering
+Insert		3	15	comp|trical engineering
+Insert		3	18	compu|trical engineering
+Right		0	18	comput|rical engineering
+Insert		3	21	compute|rical engineering
+Right		0	21	computer|ical engineering
+Delete		2	23	computer|cal engineering
+Delete		2	25	computer|al engineering
+Delete		2	27	computer|l engineering
+Delete		2	29	computer| engineering
+Right		0	29	computer |engineering
+Delete		2	31	computer |ngineering
+Replace		4	35	computer s|gineering
+Replace		4	39	computer sc|ineering
+Right		0	39	computer sci|neering
+Delete		2	41	computer sci|eering
+Delete		2	43	computer sci|ering
+Right		0	43	computer scie|ring
+Delete		2	45	computer scie|ing
+Delete		2	47	computer scie|ng
+Right		0	47	computer scien|g
+Insert		3	50	computer scienc|g
+Replace		4	54	computer science
+]0;yukih1@zuma:hw4[yukih1@zuma hw4]$ exit
+exit
+
+Script done on Sun 17 Mar 2019 01:22:18 PM PDT

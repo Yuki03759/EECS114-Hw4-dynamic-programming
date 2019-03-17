@@ -7,6 +7,49 @@ Date:
 	3/17/2018
 
 How to make:
-   	1. dynamic programming
-		make  
-		./dynamic <input file name>
+   	1. dynamic programming to calculate the smallest cost
+		make Calculate
+		./Calculate <input filename>
+    
+    2. dynamic programming to trace the operation and tranform
+        make
+        ./EditDistance <input filename>
+        
+        
+    * the input file should be this format
+    -------------------------------------
+    x size
+    x string
+    y size
+    y string
+    -------------------------------------
+    
+    
+Answer for Questions:
+    1. Implement your algorithm to calculate the edit distance d(x,y) between two strings x and y using dynamic programming 
+        and print out the corresponding sequence of transformation operations in the style of the table above. 
+        Run your program on the strings below and submit the results. 
+        x = electrical engineering y = computer science
+
+        The result is in typescript_answer1, which is 54
+    
+    2. Run your program on the three input ﬁles provided on Canvas. Each input ﬁle contains the following four lines:
+        • The number of characters m in the string x. 
+        • The string x. 
+        • The number of characters n in the string y. 
+        • The string y.
+        Compute the edit distance d(x,y) for each input.
+        
+        The results are in typescript_answer2 
+        
+    3. If z is implemented using an array, then the insert and delete operations require O(n) time. 
+        Design a suitable data structure that allows each of the four transformation operations to be implemented in O(1) time.
+        
+        The result is in typescript_answer3
+        
+        To implement in O(1), I splitted the work in 3 stages
+            1. do dynamic programming to create a matrix
+            2. trace the matrix to find the path where it comes from
+            3. do the operations based on the traced result
+        The four operations, right, delete, insert, are implemented using List.
+        Each operation costs only O(1)
