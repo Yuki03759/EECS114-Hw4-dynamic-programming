@@ -5,20 +5,21 @@
 #include <time.h>
 #include "timer.c"
 
-#define DELETE 2
-#define INSERT 3
-#define REPLACE 4
+#define DELETE_COST 2
+#define INSERT_COST 3
+#define REPLACE_COST 4
 #define LEN 20
 
 enum OP{
-    RIGHT_OP,
-    REPLACE_OP,
-    INSERT_OP,
-    DELETE_OP
+    RIGHT,
+    DELETE,
+    INSERT,
+    REPLACE,
 };
 
 typedef struct Input {
     int** m;
+    enum OP** ops;
     char* x;
     char* y;
     int size_x;
@@ -54,6 +55,7 @@ Input* createInput(int size_x, int size_y, char* x, char* y){
     
     Input* input = malloc(sizeof(Input));
     input -> m = NULL;
+    input -> ops = NULL;
     input -> x = x;
     input -> y = y;
     input -> size_x = size_x;
@@ -147,6 +149,35 @@ void printMatrix(Input* in){
     
 }
 
+void printOpsMatrix(Input* in){
+    
+    int i, j;
+    int i_x=0, j_y=0;
+    
+    // printing first y string and y base case matrix
+    printf("       ");
+    for(j = 0; j < in->size_y; j++)
+        printf("%4c ", in->y[j]);
+    printf("\n  ");
+    for(j=0; j < in->size_y+1; j++){
+        printf("%5d", in->ops[0][j]);
+    }
+    printf("\n");
+    
+    for(i = 1; i < in->size_x+1; i++){
+        printf("%c  ", in->x[i_x++]);
+        printf("%4d ", in->ops[i][0]);
+        
+        for(j = 1; j < in->size_y+1; j++){
+            printf("%4d ", in->ops[i][j]);
+        }
+        
+        printf("\n");
+        
+    }
+    
+}
+
 void printDoubleLoop(Input* in){
     
     int i, j;
@@ -164,25 +195,22 @@ void init(Input* in){
     
     //allocate matrix as m
     in->m = malloc(sizeof(int*) * (in->size_x+1));
+    in->ops = malloc(sizeof(enum OP*) * (in->size_x+1));
     
     for(i = 0; i < in->size_x+1; i++){
         in->m[i] = malloc(sizeof(int)*(in->size_y+1));
-    }
-    
-    //set every matrix as 0
-    for(i = 0; i < in->size_x+1; i++){
-        for(j = 0; j < in->size_y+1; j++){
-            in->m[i][j] = 0;
-        }
+        in->ops[i] = malloc(sizeof(enum OP)*(in->size_y+1));
     }
     
     //fill up row and column values
 
     for(i = 0; i < in->size_x+1; i++){
-        in->m[i][0] += i*DELETE;
+        in->m[i][0] += i*DELETE_COST;
+        in->ops[i][0] = DELETE;
     }
     for(j = 0; j < in->size_y+1; j++){
-        in->m[0][j] += j*INSERT;
+        in->m[0][j] += j*INSERT_COST;
+        in->ops[0][j] = INSERT;
     }
 } 
 
@@ -238,26 +266,6 @@ struct Input* scanFile(char* filename){
     return in;
 }
 
-int memoization(Input* in, int i, int j){
- 
-    if(i > 0 && j > 0){
-        if(in->x[i-1] == in->y[j-1]){
-            in->m[i][j] = in->m[i-1][j-1];
-        }
-        else{
-            int a = in->m[i-1][j-1]+REPLACE;
-            int b = in->m[i][j-1]+INSERT;
-            int c = in->m[i-1][j]+DELETE;
-            
-            int temp =(a < b ) ? a:b;
-            int min = (c < temp)? c:temp;
-            in->m[i][j] = min;
-            
-            }
-        }
-    return 0;
-}
-
 int transform(List* l, Input* in, int i, int j){
 
     if( i >= 1 && j >= 1 ){
@@ -268,9 +276,9 @@ int transform(List* l, Input* in, int i, int j){
         }
         else{
             
-            int diagonal = (transform(l, in, i-1, j-1) + REPLACE);
-            int left = (transform(l, in, i, j-1) + INSERT);
-            int bottom = (transform(l, in, i-1, j) + DELETE);
+            int diagonal = (transform(l, in, i-1, j-1) + REPLACE_COST);
+            int left = (transform(l, in, i, j-1) + INSERT_COST);
+            int bottom = (transform(l, in, i-1, j) + DELETE_COST);
             
             int temp = ( diagonal < left ) ? diagonal : left;
             int min = ( bottom < temp) ? bottom : temp;
@@ -296,19 +304,42 @@ void insert(List* l, Input* in){
     
     Node* newNode = createNode(in->y[in->j]);
     
-    if(l->point == NULL){
-        newNode->prev = l->back;
-        l->back->next = newNode;
+    //list is empty
+    if(l->front == NULL && l->back == NULL){
+        l->front = newNode;
         l->back = newNode;
-        return;
+        l->size++;
+        l->point = NULL;
+        newNode -> prev = NULL;
+        newNode -> next = NULL;
     }
-     if (l->point != l->front){
+    else{
+    //front
+        if(l->point == l -> front){
+            newNode -> next = l -> point;
+            l->point->prev = newNode;
+            l->front = newNode;
+            l->size++;
+        }
+    
+    //midlle of the list
+        else if(l->point != l->front){
         
-        newNode -> prev = l -> point -> prev;
-        newNode -> next = l -> point;
-        
-        l -> point -> prev -> next = newNode;
-        l -> point -> prev = newNode;
+            newNode -> prev = l -> point -> prev;
+            newNode -> next = l -> point;
+            l -> point -> prev -> next = newNode;
+            l -> point -> prev = newNode;
+            l -> size++;
+        }
+    
+    //back
+        else if(l->point == NULL){
+            newNode->prev = l->back;
+            l->back->next = newNode;
+            l->back = newNode;
+            l->size++;
+            return;
+        }
     }
     
     in -> j++;
@@ -376,19 +407,19 @@ void operation(List* l, Input* in, enum OP op){
     
     switch (op)
     {
-        case RIGHT_OP: 
+        case RIGHT: 
             right(l, in);
             break;
         
-        case INSERT_OP: 
+        case INSERT: 
             insert(l, in);
             break;
         
-        case DELETE_OP: 
+        case DELETE: 
             delete(l, in);
             break;
         
-        case REPLACE_OP: 
+        case REPLACE: 
             replace(l, in);
             break;
 
@@ -398,102 +429,46 @@ void operation(List* l, Input* in, enum OP op){
     
 } 
 
-void traceMatrix(Input* in, int i, int j, int totalcost){
+void traceMatrix(Input* in, int m, int n, int totalcost){
     
-    int min = 1;
-    int a, b, c, temp;
-    int* array = malloc(sizeof(int*)*totalcost);
+    enum OP* array = malloc(sizeof(enum OP)*(m *n));
     int count=0;
-    array[count++] = totalcost;
+    
     //loop through matrix to save in array
-    while(min != in->m[1][1]){
-        
-        if( i > 0 && j > 0 && i != 1 && j != 1){
-            a = in->m[i-1][j-1];
-            b = in->m[i][j-1];
-            c = in->m[i-1][j];
+    int i = m;
+    int j = n;
     
-            temp = (a < b) ? a:b;
-            min = (c < temp) ? c:temp;
- 
-            if (a == min){
-                i--;
-                j--;
+    while(i != 0 || j != 0){       
+    
+        array[count++] = in->ops[i][j];
+        switch(in->ops[i][j]){
+                case RIGHT:
+                        j--;
+                        i--;
+                    break;
+                case DELETE:
+                        i--;
+                    break;
+                    
+                case INSERT:
+                        j--;
+                    break;
+                    
+                case REPLACE:
+                        i--;
+                        j--;
+                    break;
             }
-            else if (b == min){
-                j--;
-            }
-            else
-                i--;
-            }
-        else if (i == 1){
-            min = in->m[i][j-1];
-            j--;
+            
         }
-        else if (j == 1){
-            min = in->m[i-1][j];
-            i--;
-        }
-        
-        array[count] = min;
-        count++;
-    }
-
-    //printf("\n\n count : %d\n\n, count");
     
-    //reverse the array
-    int temp_i, end = count-1;
-    for(i=0; i<count/2; i++){
-        temp_i = array[i];
-        array[i] = array[end];
-        array[end] = temp_i;
-        
-        end--;
-    }
     
+    // print array
+    /*  
     for(i=0; i < count; i++){
         printf("array[%d] : %d\n", i, array[i]);
     }
-    
-    // change number to enum 
- /* enum OP* array_op = malloc(sizeof(enum OP)*count);
-    for(i=0; i < count; i++){    
-        if(array[i] == array[i-1]){ 
-            array_op[i] = RIGHT_OP;
-        }
-        else if (array[i] == array[i-1] + DELETE ){
-            array_op[i] = DELETE_OP;
-        }
-        else if (array[i] == array[i-1] + INSERT  ) { 
-            array_op[i] = INSERT_OP;
-        }
-        else            
-            array_op[i] = REPLACE_OP;
-    }
-    
     */
-    enum OP array_op [] = { DELETE_OP,
-                    DELETE_OP,DELETE_OP,
-                    RIGHT_OP, INSERT_OP, 
-                    INSERT_OP, INSERT_OP, INSERT_OP, RIGHT_OP, INSERT_OP, RIGHT_OP,
-                    DELETE_OP,
-                    DELETE_OP,
-                    DELETE_OP,
-                    DELETE_OP,
-                    RIGHT_OP,
-                    REPLACE_OP,
-                    REPLACE_OP,
-                    DELETE_OP,
-                    RIGHT_OP,
-                    DELETE_OP,
-                    RIGHT_OP,
-                    DELETE_OP,
-                    DELETE_OP,
-                    DELETE_OP,
-                    RIGHT_OP,
-                    REPLACE_OP,
-                    INSERT_OP};
-    
     // create list 
     List* l = createList();
 
@@ -512,27 +487,51 @@ void traceMatrix(Input* in, int i, int j, int totalcost){
     printList(l, in);
     printf("\t\t0\t0\n");
     
-    char* names[] = {"Right", "Replace", "Insert" , "Delete" };
-    int costs[] = {0,4,3,2};
+    char* names[] = {"Right", "Delete", "Insert" , "Replace" };
+    int costs[] = {0,2,3,4};
     
     int total = 0;
-    for(i=0; i < 28; i++){
-        printf("%s\t\t", names[array_op[i]]);
-        operation(l, in, array_op[i]);
-        total += costs[array_op[i]];
+    for(i=count-1; i >= 0 ; i--){
+        printf("%s\t\t", names[array[i]]);
+        operation(l, in, array[i]);
+        total += costs[array[i]];
         printList(l, in);
-        printf("\t\t%d\t%d\t%d %d\n", costs[array_op[i]], total, in->i, in->j);
+        printf("\t\t%d\t%d\t\n", costs[array[i]], total);
     }
     
 }
 
-void doMemoization(Input* in){
+void DP(Input* in){
     
     int i, j;
     //do_memorization
     for(i = 1; i < in->size_x+1; i++){
         for(j = 1; j < in->size_y+1; j++){
-            memoization(in, i, j);
+            
+            if(i > 0 && j > 0){
+                if(in->x[i-1] == in->y[j-1]){
+                    in->m[i][j] = in->m[i-1][j-1];
+                    in->ops[i][j] = RIGHT;
+                    
+                }
+            else{
+                int a = in->m[i-1][j-1]+REPLACE_COST;
+                int b = in->m[i][j-1]+INSERT_COST;
+                int c = in->m[i-1][j]+DELETE_COST;
+            
+                int temp =(a < b ) ? a:b;
+                int min = (c < temp)? c:temp;
+                in->m[i][j] = min;
+           
+                if(min == a)
+                    in->ops[i][j] = REPLACE;
+                else if(min == b)
+                    in->ops[i][j] = INSERT;
+                else
+                    in->ops[i][j] = DELETE;
+                    
+            }
+        }
         }
     }
     
@@ -563,20 +562,19 @@ void writeFile(Input* in, char* filename){
 int main(){
     
     int i, j, totalcost = 0;
-    char* input_file = "./input/input.txt";
-    char* output_file = "./output/test.txt";
+    char* input_file = "./input/input1.txt";
+    char* output_file = "./output/input1.txt";
    
     Input* input = scanFile(input_file);
     
     int size_x = input->size_x;
     int size_y = input->size_y;
     
-    doMemoization(input);
+    DP(input);
     
     traceMatrix(input, size_x, size_y, input->m[size_x][size_y]);
+    //printMatrix(input);
     
-    
-    printMatrix(input);
     
     return 0;
 }
