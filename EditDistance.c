@@ -5,41 +5,49 @@
 #include <time.h>
 #include "timer.c"
 
+#define DELETE 2
+#define INSERT 3
+#define REPLACE 4
+#define LEN 20
+
+enum OP{
+    RIGHT_OP,
+    REPLACE_OP,
+    INSERT_OP,
+    DELETE_OP
+};
+
 typedef struct Input {
     int** m;
     char* x;
     char* y;
     int size_x;
     int size_y;
+    int i;
+    int j;
 }Input;
 
-typedef struct QNode {
-    struct QNode* next;
-    char* Operation;
-    char z;
-    int totalcost;
+typedef struct Node {
+    struct Node* next;
+    struct Node* prev;
+    char c;
+}Node;
+
+typedef struct List{
+    struct Node* front;
+    struct Node* point;
+    struct Node* back;
     int size;
-}QNode;
+}List;
 
-typedef struct Queue{
-    struct QNode* head;
-    struct QNode* tail;
-}Queue;
 
-typedef struct Cost{
-    int cost_insert;
-    int cost_delete;
-    int cost_replace;
-}Cost;
-    
-Cost* createCost(){
-    
-    Cost* cost = malloc(sizeof(Cost));
-    cost -> cost_insert = 3;
-    cost -> cost_delete = 2;
-    cost -> cost_replace = 4;
-    return cost;
-    
+List* createList(){
+    List* l = malloc(sizeof(List));
+    l -> size = 0;
+    l -> front = NULL;
+    l -> back = NULL;
+    l -> point = NULL;
+    return l;
 }
 
 Input* createInput(int size_x, int size_y, char* x, char* y){
@@ -50,8 +58,54 @@ Input* createInput(int size_x, int size_y, char* x, char* y){
     input -> y = y;
     input -> size_x = size_x;
     input -> size_y = size_y;
+    input -> i = 0;
+    input -> j = 0;
     
     return input;
+}
+
+Node* createNode(char c){
+    
+    Node* n = malloc(sizeof(Node));
+    n -> c = c;
+    
+    n -> next = NULL;
+    
+    return n;
+}
+
+void addNodeBack(List* l, char c){
+    assert(l);
+    Node* newNode = createNode(c);
+    
+    if(l -> size == 0){
+        l->front = newNode;
+        l->back = newNode;
+    }
+    else{
+        newNode -> prev = l -> back;
+        l -> back -> next = newNode;
+        l -> back = newNode;
+    }
+    l->size++;
+}
+
+void printList(const List* list, Input* in){
+   
+    Node* currentNode = list -> front;
+
+    while(currentNode != NULL){
+        if(currentNode == list -> point)
+            printf("|");
+        printf("%c", currentNode -> c);
+        currentNode = currentNode -> next;
+    }
+}
+
+void printNode(Node* n){
+    
+    
+    printf("n->c : %c\n\n", n->c);
 }
 
 void printInput(Input* in){
@@ -64,81 +118,73 @@ void printInput(Input* in){
    
 }
 
-void printNode(Queue* q){
-    
-    QNode* qnode = q->head;
-    printf("\nprintNode\n");
-    while(qnode != NULL){
-        
-        //printf("total cost : %d\n", qnode -> totalcost);
-        printf("     z     : %c\n", qnode -> z);
-        qnode = qnode -> next;
-    }
-}
-
 void printMatrix(Input* in){
     
     int i, j;
+    int i_x=0, j_y=0;
     
-    // printing matrix
-    printf("  ");
+    // printing first y string and y base case matrix
+    printf("       ");
     for(j = 0; j < in->size_y; j++)
-        printf("%3c ", in->y[j]);
+        printf("%4c ", in->y[j]);
+    printf("\n  ");
+    for(j=0; j < in->size_y+1; j++){
+        printf("%5d", in->m[0][j]);
+    }
     printf("\n");
-    for(i = 0; i < in->size_x; i++){
-        printf("%3c ", in->x[i]);
-        for(j = 0; j < in->size_y; j++){
-            printf("%3d ", in->m[i][j]);
+    
+    for(i = 1; i < in->size_x+1; i++){
+        printf("%c  ", in->x[i_x++]);
+        printf("%4d ", in->m[i][0]);
+        
+        for(j = 1; j < in->size_y+1; j++){
+            printf("%4d ", in->m[i][j]);
+        }
+        
+        printf("\n");
+        
+    }
+    
+}
+
+void printDoubleLoop(Input* in){
+    
+    int i, j;
+    for(i = 0; i < in->size_x+1; i++){
+        for(j = 0; j < in->size_y+1; j++){
+            printf("in[%d][%d] = %d \n", i, j, in->m[i][j]);
         }
         printf("\n");
     }
-    
 }
 
 void init(Input* in){
     
     int i, j;
-    Cost* cost = createCost();
     
     //allocate matrix as m
-    in->m = malloc(sizeof(int*) * in->size_x);
+    in->m = malloc(sizeof(int*) * (in->size_x+1));
     
-    for(i = 0; i < in->size_x; i++){
-        in->m[i] = malloc(sizeof(int)*in->size_y);
+    for(i = 0; i < in->size_x+1; i++){
+        in->m[i] = malloc(sizeof(int)*(in->size_y+1));
     }
     
     //set every matrix as 0
-    for(i = 0; i < in->size_x; i++){
-        for(j = 0; j < in->size_y; j++){
+    for(i = 0; i < in->size_x+1; i++){
+        for(j = 0; j < in->size_y+1; j++){
             in->m[i][j] = 0;
         }
     }
     
-    //add cost_r if one row does not much with the first column
-    if(in -> x[0] != in -> y[0]){
-        for(j = 0; j < in->size_y; j++){
-            if(in->x[0] != in->y[j]){
-                in->m[0][j] = cost->cost_replace;
-            }
-        }
-    
-        for(i=0; i < in->size_x; i++){
-            if(in->y[0] != in->x[i]){
-                in->m[i][0] = cost->cost_replace;
-            }
-        }
-    }
-    
-    
     //fill up row and column values
-    for(i = 0; i < in->size_x; i++){
-        in->m[i][0] += i*cost->cost_delete;
+
+    for(i = 0; i < in->size_x+1; i++){
+        in->m[i][0] += i*DELETE;
     }
-    for(j = 0; j < in->size_y; j++){
-        in->m[0][j] += j*cost->cost_insert;
+    for(j = 0; j < in->size_y+1; j++){
+        in->m[0][j] += j*INSERT;
     }
-    
-}
+} 
 
 struct Input* scanFile(char* filename){
     
@@ -192,61 +238,16 @@ struct Input* scanFile(char* filename){
     return in;
 }
 
-void Enqueue(Queue* q, Input* in, int totalcost, int qsize){
-    
-    QNode* newNode = malloc(sizeof(QNode));
-    newNode -> size = qsize;
-    newNode -> z = in -> x[newNode -> size];
-    newNode -> next = NULL;
-    newNode -> totalcost = totalcost;
-    
-    if( q -> head == NULL && q -> tail == NULL ){
-        
-        q -> head = q -> tail = newNode;
-    
-    }
-    else{
-        
-        q -> tail -> next = newNode;
-        q -> tail = newNode;
-    }
-}
-
-QNode* delete(QNode* qnode, Input* in, int i, int j){
-   
-}
-
-QNode* insert(QNode* qnode, Input* in, int i, int j){
-    
-    printf("want to insert %c\n", in->y[j]);
-    qnode -> z = in -> y[j];
-    qnode = qnode -> next;
-    qnode -> size++;
-    
-    return qnode;
-
-}
-
-QNode* replace(QNode* qnode, Input* in, int i, int j){
-    
-    printf("want to change %c to %c\n", in->x[i], in->y[j]);
-    qnode->z = in->y[j];
-    qnode = qnode->next;
-    qnode ->size++;
-    
-    return qnode;
-}
-
-int memoization(Input* in, Cost* cost, int i, int j){
+int memoization(Input* in, int i, int j){
  
-    if(in->m[i][j] == 0 && i > 0 && j > 0){
-        if(in->x[i] == in->y[j]){
+    if(i > 0 && j > 0){
+        if(in->x[i-1] == in->y[j-1]){
             in->m[i][j] = in->m[i-1][j-1];
         }
         else{
-            int a = in->m[i-1][j-1]+cost->cost_replace;
-            int b = in->m[i][j-1]+cost->cost_insert;
-            int c = in->m[i-1][j]+cost->cost_delete;
+            int a = in->m[i-1][j-1]+REPLACE;
+            int b = in->m[i][j-1]+INSERT;
+            int c = in->m[i-1][j]+DELETE;
             
             int temp =(a < b ) ? a:b;
             int min = (c < temp)? c:temp;
@@ -257,19 +258,19 @@ int memoization(Input* in, Cost* cost, int i, int j){
     return 0;
 }
 
-int transform(Queue* q, Input* in, Cost* cost, int i, int j){
+int transform(List* l, Input* in, int i, int j){
 
-    if( i >= 1 && j >= 1 && in -> m[i][j] == 0 ){
+    if( i >= 1 && j >= 1 ){
         
-        if( in -> x[i] == in -> y[j] ){
+        if( in -> x[i-1] == in -> y[j-1] ){
             
-            in -> m[i][j] = transform(q, in, cost, i-1, j-1);
+            in -> m[i][j] = transform(l, in, i-1, j-1);
         }
         else{
             
-            int diagonal = (transform(q, in, cost, i-1, j-1) + cost->cost_replace);
-            int left = (transform(q, in, cost, i, j-1) + cost->cost_insert);
-            int bottom = (transform(q, in, cost, i-1, j) + cost->cost_delete);
+            int diagonal = (transform(l, in, i-1, j-1) + REPLACE);
+            int left = (transform(l, in, i, j-1) + INSERT);
+            int bottom = (transform(l, in, i-1, j) + DELETE);
             
             int temp = ( diagonal < left ) ? diagonal : left;
             int min = ( bottom < temp) ? bottom : temp;
@@ -282,40 +283,259 @@ int transform(Queue* q, Input* in, Cost* cost, int i, int j){
     
 }    
 
-/*
-void trace(Input* in, int i, int j, int totalcost){
+void right(List* l, Input* in){
     
-    int max = 0;
-    int right, diagonal, bottom;
-    while( max != totalcost ){
-        diagonal = m[i+1][m+
+    if(l->point != NULL)
+        l->point = l->point->next;
+    
+    in -> i++;
+    in -> j++;
+}
+
+void insert(List* l, Input* in){
+    
+    Node* newNode = createNode(in->y[in->j]);
+    
+    if(l->point == NULL){
+        newNode->prev = l->back;
+        l->back->next = newNode;
+        l->back = newNode;
+        return;
+    }
+     if (l->point != l->front){
+        
+        newNode -> prev = l -> point -> prev;
+        newNode -> next = l -> point;
+        
+        l -> point -> prev -> next = newNode;
+        l -> point -> prev = newNode;
+    }
+    
+    in -> j++;
+    
+}
+
+void delete(List* l, Input* in){
+    
+    Node* deleteNode = l -> point;
+    //cursor at the front
+    //cursor in middle
+    //cursor at the back
+    if ( l->point == NULL)
+        return;
+    
+    if ( l->size == 1 && l->point == l->front)
+    { //list has only one item
+        l->size --;
+        l->front = NULL;
+        l->back = NULL;
+        l->point = NULL;
+        free(deleteNode);
+    }
+    else if( l-> point == l->front)
+    { //list has more that one item deleting the front
+       l->front ->next -> prev = NULL;
+       l->front = l-> front -> next;
+       l->point = l->front;
+       l->size --;
+       free(deleteNode);
+    }
+    else if ( l-> point == l-> back )
+    {   //list has more that one item deleting the back
+       
+        l->back -> prev -> next = NULL;
+        l->back = l->back->prev;
+        l->point = NULL;
+        l->size --;
+        free(deleteNode);
+    }else
+    {   //list has more that one item deleting somewhere in the middle abcde
+    
+        l->point->prev-> next = l-> point->next;
+        l->point->next->prev = l->point->prev;
+        l->point = l->point->next;
+        l->size --;
+        free(deleteNode);
+    }
+}
+
+void replace(List* l, Input* in){
+    
+    if(l->point == NULL)
+        return;
+    
+    l -> point -> c = in -> y[in->j];
+    l -> point = l -> point -> next;
+    
+    in -> i++;
+    in -> j++;
+
+}
+
+void operation(List* l, Input* in, enum OP op){
+    
+    switch (op)
+    {
+        case RIGHT_OP: 
+            right(l, in);
+            break;
+        
+        case INSERT_OP: 
+            insert(l, in);
+            break;
+        
+        case DELETE_OP: 
+            delete(l, in);
+            break;
+        
+        case REPLACE_OP: 
+            replace(l, in);
+            break;
+
+        default:
+            break;
+    }
+    
+} 
+
+void traceMatrix(Input* in, int i, int j, int totalcost){
+    
+    int min = 1;
+    int a, b, c, temp;
+    int* array = malloc(sizeof(int*)*totalcost);
+    int count=0;
+    array[count++] = totalcost;
+    //loop through matrix to save in array
+    while(min != in->m[1][1]){
+        
+        if( i > 0 && j > 0 && i != 1 && j != 1){
+            a = in->m[i-1][j-1];
+            b = in->m[i][j-1];
+            c = in->m[i-1][j];
+    
+            temp = (a < b) ? a:b;
+            min = (c < temp) ? c:temp;
+ 
+            if (a == min){
+                i--;
+                j--;
+            }
+            else if (b == min){
+                j--;
+            }
+            else
+                i--;
+            }
+        else if (i == 1){
+            min = in->m[i][j-1];
+            j--;
+        }
+        else if (j == 1){
+            min = in->m[i-1][j];
+            i--;
+        }
+        
+        array[count] = min;
+        count++;
+    }
+
+    //printf("\n\n count : %d\n\n, count");
+    
+    //reverse the array
+    int temp_i, end = count-1;
+    for(i=0; i<count/2; i++){
+        temp_i = array[i];
+        array[i] = array[end];
+        array[end] = temp_i;
+        
+        end--;
+    }
+    
+    for(i=0; i < count; i++){
+        printf("array[%d] : %d\n", i, array[i]);
+    }
+    
+    // change number to enum 
+ /* enum OP* array_op = malloc(sizeof(enum OP)*count);
+    for(i=0; i < count; i++){    
+        if(array[i] == array[i-1]){ 
+            array_op[i] = RIGHT_OP;
+        }
+        else if (array[i] == array[i-1] + DELETE ){
+            array_op[i] = DELETE_OP;
+        }
+        else if (array[i] == array[i-1] + INSERT  ) { 
+            array_op[i] = INSERT_OP;
+        }
+        else            
+            array_op[i] = REPLACE_OP;
+    }
+    
+    */
+    enum OP array_op [] = { DELETE_OP,
+                    DELETE_OP,DELETE_OP,
+                    RIGHT_OP, INSERT_OP, 
+                    INSERT_OP, INSERT_OP, INSERT_OP, RIGHT_OP, INSERT_OP, RIGHT_OP,
+                    DELETE_OP,
+                    DELETE_OP,
+                    DELETE_OP,
+                    DELETE_OP,
+                    RIGHT_OP,
+                    REPLACE_OP,
+                    REPLACE_OP,
+                    DELETE_OP,
+                    RIGHT_OP,
+                    DELETE_OP,
+                    RIGHT_OP,
+                    DELETE_OP,
+                    DELETE_OP,
+                    DELETE_OP,
+                    RIGHT_OP,
+                    REPLACE_OP,
+                    INSERT_OP};
+    
+    // create list 
+    List* l = createList();
+
+    for(i=0; i < in->size_x; i++){
+        addNodeBack(l, in -> x[i]);
     }
     
     
+    Node* firstNode = l -> front;
+    
+    l->point = firstNode;
+    
+    printf("\noperation\t\tz\t\tcost\ttotal\n");
+    printf("----------------------------------------------------------------\n");
+    printf("initial\t\t");
+    printList(l, in);
+    printf("\t\t0\t0\n");
+    
+    char* names[] = {"Right", "Replace", "Insert" , "Delete" };
+    int costs[] = {0,4,3,2};
+    
+    int total = 0;
+    for(i=0; i < 28; i++){
+        printf("%s\t\t", names[array_op[i]]);
+        operation(l, in, array_op[i]);
+        total += costs[array_op[i]];
+        printList(l, in);
+        printf("\t\t%d\t%d\t%d %d\n", costs[array_op[i]], total, in->i, in->j);
+    }
+    
 }
-*/
 
-void doMemorization(Input* in){
+void doMemoization(Input* in){
     
     int i, j;
-    Cost* cost = createCost();
     //do_memorization
-    for(i = 0; i < in->size_x; i++){
-        for(j = 0; j < in->size_y; j++){
-            memoization(in, cost, i, j);
+    for(i = 1; i < in->size_x+1; i++){
+        for(j = 1; j < in->size_y+1; j++){
+            memoization(in, i, j);
         }
     }
     
-}
-
-void printFinalInfo(Input* in, char* filename){
-  
-     //print information
-    printInput(in);
-    printf("\n");
-    printf("input file : %s\n", filename);
-    printf("smallest cost : %d\n", in->m[in->size_x-1][in->size_y-1]);
-    printf("\n");
 }
 
 void writeFile(Input* in, char* filename){
@@ -342,38 +562,21 @@ void writeFile(Input* in, char* filename){
 
 int main(){
     
-    int i, j;
-    int totalcost = 0;
-    int qsize=0;
-    char* input_file = "./input/test.txt";
+    int i, j, totalcost = 0;
+    char* input_file = "./input/input.txt";
     char* output_file = "./output/test.txt";
    
-    Queue *q = malloc(sizeof(Queue));
-    
     Input* input = scanFile(input_file);
-    Cost* cost = createCost();
     
-    int size_x = input -> size_x;
-    int size_y = input -> size_y;
+    int size_x = input->size_x;
+    int size_y = input->size_y;
     
-    for(i=0; i < input->size_x; i++){
-        
-        Enqueue(q, input, 0, qsize++);
-    }
+    doMemoization(input);
     
-    QNode* firstNode = q->head;
+    traceMatrix(input, size_x, size_y, input->m[size_x][size_y]);
     
-    //transform(q, input, cost, size_x-1, size_y-1);
-    
-    doMemorization(input);
-    
-    //trace(input, cost, 0, 0, input->m[size_x-1][size_y-1]);
     
     printMatrix(input);
-    
-    printNode(q);
-    
-    printFinalInfo(input, input_file);
     
     return 0;
 }
