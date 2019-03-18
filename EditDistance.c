@@ -146,8 +146,9 @@ void printMatrix(Input* in){
         printf("\n");
         
     }
-    
 }
+
+
 
 void printOpsMatrix(Input* in){
     
@@ -462,7 +463,7 @@ void traceMatrix(Input* in, int m, int n, int totalcost){
             
         }
     
-    
+    //printOpsMatrix(in);
     // print array
     /*  
     for(i=0; i < count; i++){

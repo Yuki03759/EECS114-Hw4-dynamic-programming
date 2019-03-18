@@ -11,9 +11,9 @@ How to make:
 		make Calculate
 		./Calculate <input filename>
     
-    2. dynamic programming to trace the operation and tranform
-        make
-        ./EditDistance <input filename>
+	2. dynamic programming to trace the operation and tranform
+		make
+		./EditDistance <input filename>
         
         
     * the input file should be this format
